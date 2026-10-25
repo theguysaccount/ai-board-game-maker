@@ -10,9 +10,9 @@
   --ink: #1b1b1f;
   --muted: #5e6470;
   --line: #e8dfcf;
-  --brand: #d9622b;
+  --brand: #b9531f;
   --brand-ink: #ffffff;
-  --brand-2: #0f8b8d;
+  --brand-2: #0b7375;
   --link: #0b6e70;
   --focus: #1f6fb2;
   --shadow: 0 1px 2px rgba(40, 30, 10, .06), 0 8px 24px rgba(40, 30, 10, .08);
@@ -24,7 +24,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #15161a; --card: #1e2026; --soft: #26282f; --ink: #f2efe8; --muted: #b3b6bd; --line: #33363e;
-    --brand: #f07a45; --brand-2: #3cc1c3; --link: #6fd6d8; --focus: #8cc4ff;
+    --brand: #f07a45; --brand-ink: #1b1b1f; --brand-2: #3cc1c3; --link: #6fd6d8; --focus: #8cc4ff;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
     color-scheme: dark;
   }
@@ -105,7 +105,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--focus); outline:
 .steps { display: grid; gap: 16px; padding: 0; list-style: none; counter-reset: s; }
 @media (min-width: 760px) { .steps { grid-template-columns: repeat(3, 1fr); } }
 .steps li { counter-increment: s; }
-.steps li::before { content: counter(s); display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--brand-2); color: #fff; font: 1.2rem var(--display); margin-bottom: 8px; }
+.steps li::before { content: counter(s); display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--brand-2); color: var(--bg); font: 1.2rem var(--display); margin-bottom: 8px; }
 .faq dt { font-weight: 700; margin-top: 1em; }
 .faq dd { margin: .3em 0 0; }
 .article { padding-top: 26px; }
@@ -172,7 +172,7 @@ details.panel > div { padding: 0 16px 16px; }
 .called { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 18px; }
 .called span { background: var(--soft); border-radius: 999px; padding: 4px 10px; font-size: .9rem; }
 .memory { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
-.mcard { aspect-ratio: 5 / 6; border-radius: 12px; border: 2px solid var(--line); background: var(--brand-2); color: #fff; font: 1.6rem var(--display); cursor: pointer; display: grid; place-items: center; padding: 6px; }
+.mcard { aspect-ratio: 5 / 6; border-radius: 12px; border: 2px solid var(--line); background: var(--brand-2); color: var(--bg); font: 1.6rem var(--display); cursor: pointer; display: grid; place-items: center; padding: 6px; }
 .mcard.up { background: var(--card); color: var(--ink); font: 700 .95rem/1.25 var(--body); cursor: default; }
 .mcard.found { background: color-mix(in srgb, var(--brand-2) 18%, var(--card)); border-color: var(--brand-2); color: var(--ink); font: 700 .95rem/1.25 var(--body); }
 .mcard.bot { border-color: var(--brand); }
