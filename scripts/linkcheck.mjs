@@ -28,7 +28,7 @@ async function get(url, wantText = false) {
 const sm = await get(base + "/sitemap.xml", true);
 if (sm.status !== 200) { console.error("sitemap missing:", sm.status); process.exit(1); }
 let pages = [...sm.text.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-if (quick) pages = [pages[0], ...pages.filter((p) => /\/(make|values|examples|mottos|heraldry)\//.test(p)).slice(0, 8)];
+if (quick) pages = [pages[0], ...pages.filter((p) => /\/(make|games|topics|how-to-make-a-board-game)\//.test(p)).slice(0, 8)];
 const refs = new Set([base + "/robots.txt", base + "/favicon.svg", base + "/apple-touch-icon.png"]);
 for (const p of pages) {
   const r = await get(p, true);

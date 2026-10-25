@@ -43,7 +43,8 @@ async function init() {
 
 function loadPack(p, ask = true) {
   if (!p) return;
-  if (ask && filled().length && S.packId !== p.id && !confirm(`Replace your ${filled().length} pairs with “${p.title}”?`)) return false;
+  // Only ask when the list holds the user's own words; an untouched topic is simply replaced.
+  if (ask && filled().length && !S.packId && !confirm(`Replace your ${filled().length} pairs with “${p.title}”?`)) return false;
   S.title = p.title;
   S.items = p.items.map(([a, b]) => ({ a, b }));
   S.packId = p.id;
