@@ -39,6 +39,24 @@ function copyDir(from, to) {
 }
 
 const published = PACKS.filter((p) => p.publish <= TODAY);
+
+// One version for all JavaScript: every relative module import and every <script> tag carries
+// ?v=<hash of all JS sources>, so a browser never mixes modules from two deploys.
+function jsVersion() {
+  const files = [];
+  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else if (f.endsWith(".js")) files.push(f); } };
+  walk(path.join(SRC, "assets/js"));
+  return hashOf(files.sort().map((f) => fs.readFileSync(f, "utf8")).join("\n"));
+}
+function versionImports(dir, v) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const f = path.join(dir, e.name);
+    if (e.isDirectory()) versionImports(f, v);
+    else if (f.endsWith(".js")) fs.writeFileSync(f, fs.readFileSync(f, "utf8").replace(/(from\s+|import\s*\(\s*)(["'])(\.{1,2}\/[^"']+\.js)\2/g, (m, pre, q, spec) => `${pre}${q}${spec}?v=${v}${q}`));
+  }
+}
+const JSV = jsVersion();
+
 const pages = [];
 const ogJobs = [];
 
@@ -56,7 +74,7 @@ function layout(p) {
   const url = ABS(p.path);
   const og = ABS(p.og || "og/home.jpg");
   const css = L("assets/css/site.css") + "?v=" + fileHash(path.join(SRC, "assets/css/site.css"));
-  const scripts = (p.scripts || []).map((s) => `<script type="module" src="${L(s)}?v=${fileHash(path.join(SRC, s))}"></script>`).join("");
+  const scripts = (p.scripts || []).map((s) => `<script type="module" src="${L(s)}?v=${JSV}"></script>`).join("");
   const gc = CFG.goatcounter ? `<script>if(navigator.doNotTrack!=="1"&&!navigator.globalPrivacyControl){var s=document.createElement("script");s.async=1;s.src="https://gc.zgo.at/count.js";s.dataset.goatcounter=${json(CFG.goatcounter)};document.head.appendChild(s);}</script>` : "";
   const nav = [["make/", "Make a game"], ["games/", "Games"], ["topics/", "Topics"], ["how-to-make-a-board-game/", "How-to"]];
   return `<!doctype html>
@@ -298,6 +316,7 @@ function guidePages() {
 function writeAll() {
   fs.rmSync(OUT, { recursive: true, force: true });
   copyDir(path.join(SRC, "assets"), path.join(OUT, "assets"));
+  versionImports(path.join(OUT, "assets/js"), JSV);
   fs.mkdirSync(path.join(OUT, "assets/data"), { recursive: true });
   fs.writeFileSync(path.join(OUT, "assets/data/packs.json"), JSON.stringify(published.map(({ id, title, subject, level, items }) => ({ id, title, subject, level, items }))));
   home(); appPages(); gamesPages(); topicPages(); guidePages();
