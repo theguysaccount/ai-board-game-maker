@@ -58,8 +58,8 @@ function render() {
       h("div", { class: "pair-head" }, h("span"), h("span", {}, "Clue or question"), h("span", {}, "Answer"), h("span")),
       ...S.items.map((it, i) => h("div", { class: "pair" },
         h("span", { class: "n" }, String(i + 1)),
-        h("input", { type: "text", value: it.a, maxlength: LIMITS.field, "aria-label": `Clue ${i + 1}`, oninput: (e) => { it.a = e.target.value; S.packId = ""; changed(); } }),
-        h("input", { type: "text", value: it.b, maxlength: LIMITS.field, "aria-label": `Answer ${i + 1}`, oninput: (e) => { it.b = e.target.value; S.packId = ""; changed(); } }),
+        h("input", { type: "text", value: it.a, maxlength: LIMITS.field, placeholder: "Clue or question", "aria-label": `Clue ${i + 1}`, oninput: (e) => { it.a = e.target.value; S.packId = ""; changed(); } }),
+        h("input", { type: "text", value: it.b, maxlength: LIMITS.field, placeholder: "Answer", "aria-label": `Answer ${i + 1}`, oninput: (e) => { it.b = e.target.value; S.packId = ""; changed(); } }),
         h("button", { type: "button", class: "icon-btn", "aria-label": `Remove pair ${i + 1}`, onclick: () => { S.items.splice(i, 1); drawPairs(); changed(); } }, "×"))));
   };
   drawPairs();

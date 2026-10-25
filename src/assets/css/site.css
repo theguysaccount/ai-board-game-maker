@@ -177,3 +177,12 @@ details.panel > div { padding: 0 16px 16px; }
 .mcard.found { background: color-mix(in srgb, var(--brand-2) 18%, var(--card)); border-color: var(--brand-2); color: var(--ink); font: 700 .95rem/1.25 var(--body); }
 .mcard.bot { border-color: var(--brand); }
 .scores { display: flex; gap: 14px; justify-content: center; font-weight: 700; margin: 10px 0 16px; flex-wrap: wrap; }
+/* Phones: stack each clue above its answer so both are readable while editing. */
+@media (max-width: 560px) {
+  .pair-head { display: none; }
+  .pair { grid-template-columns: 1.4em 1fr 40px; grid-template-rows: auto auto; row-gap: 4px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); }
+  .pair .n { grid-row: 1 / span 2; align-self: start; padding-top: 10px; }
+  .pair input:nth-of-type(1) { grid-column: 2; grid-row: 1; }
+  .pair input:nth-of-type(2) { grid-column: 2; grid-row: 2; font-weight: 700; }
+  .pair .icon-btn { grid-column: 3; grid-row: 1 / span 2; align-self: center; }
+}
