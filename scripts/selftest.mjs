@@ -100,6 +100,10 @@ try {
     } catch (e) { check(false, `${g}.pdf would not render: ${String(e.stderr || e.message).slice(0, 200)}`); }
   }
 
+  // Switch topics through the topic menu: an untouched topic is replaced without a prompt.
+  await ed.eval(`(async () => { const sel = document.querySelector('select[aria-label="Start from a topic"]'); sel.value = "europe-capitals"; sel.dispatchEvent(new Event("change", { bubbles: true })); await new Promise((r) => setTimeout(r, 450)); })()`);
+  check((await ed.eval(`document.querySelector("#title").value`)) === "Capitals of Europe" && /24 pairs/.test(await ed.eval(`document.querySelector(".preview p.small").textContent`)), "choosing a topic from the menu loads it");
+
   // Paste a list, then a too-short list
   await ed.eval(`(async () => {
     const det = [...document.querySelectorAll("details summary")].find((s) => /Paste a list/.test(s.textContent)).parentElement; det.open = true;
