@@ -1,0 +1,109 @@
+# Build, test and deploy the site to GitHub Pages.
+# Runs on every push to main, weekly on Mondays (publishes the next topic from the backlog,
+# re-runs the full self-test and re-checks sample PDFs), and by hand. Fails safe: if tests, the
+# build or the browser self-test fail, nothing is deployed and the last good version stays live.
+name: Build, test and deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "29 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # The public URL. Set the repository variable PGM_SITE_URL after pointing a custom domain.
+  PGM_BASE_URL: ${{ vars.PGM_SITE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
+  PGM_REPO: ${{ github.repository }}
+  PGM_SHOP_URL: ${{ vars.PGM_SHOP_URL }}           # optional: print-on-demand game printer link (money key)
+  PGM_SUPPORT_URL: ${{ vars.PGM_SUPPORT_URL }}     # optional: donation / sponsor link
+  PGM_GOATCOUNTER: ${{ vars.PGM_GOATCOUNTER }}     # optional: https://<code>.goatcounter.com/count
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Tools that check PDFs independently (qpdf, pdftoppm)
+        run: (sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends qpdf poppler-utils) > /dev/null || echo "PDF tools unavailable; the self-test checks structure itself"
+      - name: Unit and build tests
+        run: npm test
+      - name: Build the site
+        run: node scripts/build.mjs
+      - name: Draw share cards
+        run: node scripts/og.mjs
+      - name: End-to-end self-test in Chrome (pages, editor, every game's PDF, share links, play modes)
+        run: node scripts/selftest.mjs
+      - name: List pages that changed since the live deploy
+        run: node scripts/indexnow.mjs --diff "$PGM_BASE_URL/manifest.json" dist/manifest.json > changed-urls.txt
+      - name: Keep the self-test samples (PDFs and rendered pages)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: selftest-${{ github.run_number }}
+          path: selftest-out
+          retention-days: 30
+      - uses: actions/upload-artifact@v7
+        with:
+          name: changed-urls
+          path: changed-urls.txt
+          retention-days: 7
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
+
+  after-deploy:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v8
+        with:
+          name: changed-urls
+      - name: Smoke-test the live site
+        run: |
+          sleep 20
+          node scripts/linkcheck.mjs "$PGM_BASE_URL" --quick
+      - name: Tell search engines about changed pages (IndexNow)
+        run: node scripts/indexnow.mjs --file changed-urls.txt || true
+
+  keepalive:
+    # Runs on schedule even when the build fails, so the weekly job is never disabled.
+    if: ${{ always() && github.event_name == 'schedule' }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - run: bash .github/scripts/keepalive.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
